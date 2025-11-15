@@ -10,18 +10,12 @@ from langchain_openai import ChatOpenAI
 import os
 from dotenv import load_dotenv, dotenv_values
 
-# Load environment variables
+
 load_dotenv()
 env_values = dotenv_values()
 
-# ---- ENABLE LANGSMITH ----
 os.environ["LANGCHAIN_TRACING_V2"] = "true"
-os.environ["LANGCHAIN_PROJECT"] = "deepseek-chatbot"
-# LANGSMITH_API_KEY will auto-load from .env
-# ---------------------------------------------
 
-
-# --- 1. LLM SETUP ---
 api_key = env_values.get("OPENROUTER_API_KEY") or env_values.get("OPENAI_API_KEY")
 
 if not api_key:

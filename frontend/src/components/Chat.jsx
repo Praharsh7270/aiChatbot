@@ -32,14 +32,10 @@ export default function Chat(){
     if(!input.trim()) return
     const userText = input.trim()
     setInput('')
-
-    // append user message instantly
     setMessages(prev => [...prev, {from: 'user', text: userText}])
     setLoading(true)
 
     try{
-      // FastAPI expects `user_message` and a string `thread_id` (not null),
-      // and returns `response_content` and `thread_id`.
       const payload = { user_message: userText, thread_id: threadId || '' }
       const res = await fetch(`${apiBase}/chat`, {
         method: 'POST',
@@ -55,7 +51,6 @@ export default function Chat(){
         throw new Error(errText || 'Server error')
       }
       const data = await res.json()
-      // use the backend's response_content field
       const botText = data.response_content || data.response || 'No response'
       const returnedThreadId = data.thread_id || data.threadId || null
       if(returnedThreadId){
