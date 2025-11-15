@@ -60,7 +60,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",
         "http://127.0.0.1:5173",
-        "https://ai-chatbot-ioo5-446sk1ew8-praharsh-singhs-projects.vercel.app",
+        "https://ai-chatbot-ioo5-hcwa63db1-praharsh-singhs-projects.vercel.app/",
     ],
     allow_credentials=True,
     allow_methods=["*"],
