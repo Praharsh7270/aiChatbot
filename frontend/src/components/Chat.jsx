@@ -26,7 +26,7 @@ export default function Chat(){
     }
   }, [messages, loading])
 
-  const apiBase = import.meta.env.VITE_API_URL || 'https://aichatbot-9cn1.onrender.com';
+  const apiBase = import.meta.env.VITE_API_URL || 'https://aichatbot-1-i4j2.onrender.com';
 
 
   async function sendMessage(){
