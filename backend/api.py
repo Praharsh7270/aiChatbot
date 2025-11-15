@@ -103,6 +103,10 @@ async def chat_endpoint(input_data: ChatInput):
         thread_id=input_data.thread_id
     )
 
+@app.get("/ping")
+def ping():
+    return {"message": "pong"}
+
 # --- 7. RUN ---
 if __name__ == "__main__":
     import uvicorn
