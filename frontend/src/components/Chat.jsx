@@ -26,7 +26,8 @@ export default function Chat(){
     }
   }, [messages, loading])
 
-  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+  const apiBase = import.meta.env.VITE_API_URL || 'https://aichatbot-9cn1.onrender.com';
+
 
   async function sendMessage(){
     if(!input.trim()) return
