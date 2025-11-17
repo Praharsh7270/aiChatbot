@@ -1,12 +1,76 @@
 import React, { useState, useEffect, useRef } from 'react'
 
-function Message({m}){
+function TextGeneration({ text, animate = true }){
+  const [visible, setVisible] = useState(animate ? '' : text)
+  const mounted = useRef(false)
+
+  useEffect(() => {
+    if(!animate){
+      setVisible(text)
+      return
+    }
+
+    let i = 0
+    const len = text.length
+    // If text is very long, don't animate
+    if(len > 1200){ setVisible(text); return }
+
+    let cancelled = false
+    function step(){
+      if(cancelled) return
+      i += 2 // reveal 2 chars per tick for decent speed
+      setVisible(text.slice(0, i))
+      if(i < len){
+        const timeout = Math.max(12, 1200 / Math.max(len, 1))
+        setTimeout(step, timeout)
+      }
+    }
+
+    // small delay before starting to look nicer
+    const starter = setTimeout(step, 120)
+
+    return () => { cancelled = true; clearTimeout(starter) }
+  }, [text, animate])
+
   return (
-    <div className={`message ${m.from}`}>
-      <div className="message-body">{m.text}</div>
-    </div>
+    <span className="gen-text">
+      {visible}
+      {visible !== text && <span className="cursor">▍</span>}
+    </span>
   )
 }
+
+function Message({ m }) {
+  const match = typeof m.text === 'string' && m.text.match(/^\(tool:\s*([^\)]+)\)\s*(.*)/i);
+  const tool = match ? match[1] : null;
+  const content = match ? match[2] : m.text;
+
+  const animate = m.from === 'bot';
+
+  return (
+    <div className={`message ${m.from}`}>
+      <div className="message-body">
+
+        {/* TOOL BADGE */}
+        {tool && (
+          <div className="tool-badge-animated">
+            <span className="tool-name">{tool}</span>
+            <span className="tool-loading">running…</span>
+          </div>
+        )}
+
+        {/* MAIN TEXT */}
+        {m.from === "user" ? (
+          <div className="plain-text">{content}</div>
+        ) : (
+          <TextGeneration text={content} animate={animate} />
+        )}
+
+      </div>
+    </div>
+  );
+}
+
 
 export default function Chat(){
   const [messages, setMessages] = useState([])
@@ -22,7 +86,8 @@ export default function Chat(){
   useEffect(() => {
     // autoscroll when messages change
     if(listRef.current){
-      listRef.current.scrollTop = listRef.current.scrollHeight
+      // smooth scroll to bottom
+      try{ listRef.current.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' }) }catch(e){ listRef.current.scrollTop = listRef.current.scrollHeight }
     }
   }, [messages, loading])
 
@@ -33,7 +98,7 @@ export default function Chat(){
     if(!input.trim()) return
     const userText = input.trim()
     setInput('')
-    setMessages(prev => [...prev, {from: 'user', text: userText}])
+    setMessages(prev => [...prev, {from: 'user', text: userText, id: Date.now() + Math.random()}])
     setLoading(true)
 
     try{
@@ -57,10 +122,10 @@ export default function Chat(){
       if(returnedThreadId){
         setThreadId(returnedThreadId)
       }
-      setMessages(prev => [...prev, {from: 'bot', text: botText}])
+      setMessages(prev => [...prev, {from: 'bot', text: botText, id: Date.now() + Math.random()}])
     }catch(err){
       console.error(err)
-      setMessages(prev => [...prev, {from: 'bot', text: 'Error: ' + (err.message || 'unknown error')}])
+  setMessages(prev => [...prev, {from: 'bot', text: 'Error: ' + (err.message || 'unknown error'), id: Date.now() + Math.random()}])
     }finally{
       setLoading(false)
     }
@@ -77,7 +142,7 @@ export default function Chat(){
     <div className="chat-container">
       <div className="chat-window" ref={listRef}>
         {messages.length === 0 && (
-          <div className="empty">Say hi — your messages are sent to the backend at <code>{apiBase}</code></div>
+          <div className="empty">Say hi </div>
         )}
         {messages.map((m, i) => <Message key={i} m={m} />)}
         {loading && <div className="message bot"><div className="message-body">...</div></div>}
