@@ -1,6 +1,25 @@
+# Backend Python dependencies for aiChatbot
+# Core environment and runtime
 python-dotenv>=1.0.0
-langgraph
-langchain-core
-langchain-openai
-uvicorn
-fastapi
+requests>=2.28.0
+yfinance>=0.2.22
+
+# FastAPI web server
+fastapi>=0.95.0
+uvicorn[standard]>=0.22.0
+
+# LangGraph / LangChain related packages
+langgraph>=0.1.0
+langchain-core>=0.1.0
+langchain-openai>=0.1.0
+langchain-community>=0.1.0
+
+# Pydantic (FastAPI v2 uses pydantic v2)
+pydantic>=2.0
+
+# Optional: HTTP client with async support (if needed by tools)
+httpx>=0.24.0
+
+# Notes:
+# - sqlite3 is part of Python stdlib, no install needed.
+# - Pin exact versions as needed for your deployment.
