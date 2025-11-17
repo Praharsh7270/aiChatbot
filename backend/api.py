@@ -12,7 +12,11 @@ from langchain_community.tools import DuckDuckGoSearchRun, WikipediaQueryRun
 from langchain_community.utilities import WikipediaAPIWrapper
 import os
 from dotenv import load_dotenv, dotenv_values
-from langgraph.checkpoint.sqlite import SqliteSaver
+# SqliteSaver may not exist in all langgraph releases/installs. Import defensively.
+try:
+    from langgraph.checkpoint.sqlite import SqliteSaver
+except Exception:
+    SqliteSaver = None
 import sqlite3
 import uvicorn
 import requests
@@ -183,7 +187,15 @@ def tool_node(state: ChatState):
 
 
 conn = sqlite3.connect(database="chatbot5.db", check_same_thread=False)
-checkpointer = SqliteSaver(conn=conn)
+if SqliteSaver is not None:
+    try:
+        checkpointer = SqliteSaver(conn=conn)
+    except Exception as e:
+        print(f"Warning: SqliteSaver import succeeded but initialization failed: {e}")
+        checkpointer = None
+else:
+    print("Warning: langgraph.checkpoint.sqlite.SqliteSaver not available. Continuing without persistent checkpointer.")
+    checkpointer = None
 
 
 # --- 5. GRAPH DEFINITION ---
@@ -208,7 +220,10 @@ graph.add_conditional_edges(
 # Tool execution always loops back to the chat node for synthesis
 graph.add_edge("tool", "chat")
 
-chatbot = graph.compile()
+if checkpointer is not None:
+    chatbot = graph.compile(checkpointer=checkpointer)
+else:
+    chatbot = graph.compile()
 
 
 # -------------------------------------------------------

@@ -9,7 +9,10 @@ from langchain_community.utilities import WikipediaAPIWrapper
 from langchain_core.tools import tool
 import os
 from dotenv import load_dotenv
-from langgraph.checkpoint.sqlite import SqliteSaver
+try:
+    from langgraph.checkpoint.sqlite import SqliteSaver
+except Exception:
+    SqliteSaver = None
 import sqlite3
 import requests
 import traceback
@@ -224,9 +227,20 @@ graph.add_edge("tool", "chat")
 # MEMORY
 # -------------------------------------------------------
 conn = sqlite3.connect("chat_memory.db", check_same_thread=False)
-memory = SqliteSaver(conn)
+if SqliteSaver is not None:
+    try:
+        memory = SqliteSaver(conn)
+    except Exception as e:
+        print(f"Warning: SqliteSaver initialization failed: {e}")
+        memory = None
+else:
+    print("Warning: langgraph.checkpoint.sqlite.SqliteSaver not available. Running without persistent memory.")
+    memory = None
 
-chatbot = graph.compile(checkpointer=memory)
+if memory is not None:
+    chatbot = graph.compile(checkpointer=memory)
+else:
+    chatbot = graph.compile()
 
 # -------------------------------------------------------
 # RUN
